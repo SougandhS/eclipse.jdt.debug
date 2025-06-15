@@ -24,6 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+
 public class JavaStackTraceAmbiguityTest extends AbstractJavaStackTraceConsoleTest {
 
 	public JavaStackTraceAmbiguityTest(String name) {
