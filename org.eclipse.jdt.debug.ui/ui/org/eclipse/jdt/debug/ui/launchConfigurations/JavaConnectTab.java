@@ -122,6 +122,15 @@ public class JavaConnectTab extends AbstractJavaMainTab implements IPropertyChan
 		Composite cgroup = SWTFactory.createComposite(group, font, 2, 1, GridData.FILL_HORIZONTAL);
 		fArgumentComposite = cgroup;
 		createVerticalSpacer(comp, 2);
+		Button showActiveProcessButton = createPushButton(comp, "Show Active Processes", null);
+		GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+		showActiveProcessButton.setLayoutData(gd);
+		showActiveProcessButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// handleShowActiveProcesses(); // your method
+			}
+		});
 		fAllowTerminateButton = createCheckButton(comp, LauncherMessages.JavaConnectTab__Allow_termination_of_remote_VM_6);
 		fAllowTerminateButton.addSelectionListener(getDefaultListener());
 
