@@ -23,6 +23,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;
@@ -53,6 +54,8 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -65,7 +68,12 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.dialogs.FilteredList;
 
 import com.sun.jdi.connect.Connector;
 
@@ -102,7 +110,7 @@ public class JavaConnectTab extends AbstractJavaMainTab implements IPropertyChan
 		createProjectEditor(comp);
 		createVerticalSpacer(comp, 1);
 
-	//connection type
+		// connection type
 		Group group = SWTFactory.createGroup(comp, LauncherMessages.JavaConnectTab_Connect_ion_Type__7, 1, 1, GridData.FILL_HORIZONTAL);
 		String[] names = new String[fConnectors.length];
 		for (int i = 0; i < fConnectors.length; i++) {
@@ -117,7 +125,7 @@ public class JavaConnectTab extends AbstractJavaMainTab implements IPropertyChan
 		});
 		createVerticalSpacer(comp, 1);
 
-	//connection properties
+		// connection properties
 		group = SWTFactory.createGroup(comp, LauncherMessages.JavaConnectTab_Connection_Properties_1, 2, 1, GridData.FILL_HORIZONTAL);
 		Composite cgroup = SWTFactory.createComposite(group, font, 2, 1, GridData.FILL_HORIZONTAL);
 		fArgumentComposite = cgroup;
@@ -129,6 +137,9 @@ public class JavaConnectTab extends AbstractJavaMainTab implements IPropertyChan
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// handleShowActiveProcesses(); // your method
+				DecoratingLabelProvider labelProvider = new DecoratingLabelProvider(DebugUITools.newDebugModelPresentation(), PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator());
+				ElementListSelectionDialog element = new RemoteLaunchesDialog(DebugUIPlugin.getShellForModalDialog(), labelProvider, List.of("ssd", "sdsd"));
+				element.open();
 			}
 		});
 		fAllowTerminateButton = createCheckButton(comp, LauncherMessages.JavaConnectTab__Allow_termination_of_remote_VM_6);
@@ -136,6 +147,44 @@ public class JavaConnectTab extends AbstractJavaMainTab implements IPropertyChan
 
 		setControl(comp);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_CONNECT_TAB);
+	}
+
+	private static final class RemoteLaunchesDialog extends ElementListSelectionDialog {
+		private final List<String> launches;
+
+		private RemoteLaunchesDialog(Shell parent, ILabelProvider renderer, List<String> launches) {
+			super(parent, renderer);
+			this.launches = launches;
+
+		}
+
+		@Override
+		protected FilteredList createFilteredList(Composite parent) {
+			FilteredList filteredList = super.createFilteredList(parent);
+			// Disable default sorting to keep the original order
+			// Add selection listener to highlight selected lambda in the editor
+			filteredList.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					int index = filteredList.getSelectionIndex();
+					if (index < 0) {
+						return;
+					}
+					IWorkbenchPage page = JDIDebugUIPlugin.getActivePage();
+					if (page == null) {
+						return;
+					}
+					IEditorPart editorPart = page.getActiveEditor();
+				}
+			});
+			return filteredList;
+		}
+
+		@Override
+		protected void setShellStyle(int newShellStyle) {
+			// overridden to allow interaction with the underlying editor while the dialog is open
+			super.setShellStyle(newShellStyle & ~SWT.APPLICATION_MODAL);
+		}
 	}
 
 	/**
