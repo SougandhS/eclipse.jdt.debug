@@ -47,7 +47,7 @@ public class StepOutOfCodeBlockTests extends AbstractDebugTest {
 	protected void setUp() throws Exception {
 		super.setUp();
 		fSavedSkipBreakpoints = DebugUITools.getPreferenceStore().getBoolean(IDebugUIConstants.PREF_SKIP_BREAKPOINTS_DURING_RUN_TO_LINE);
-		DebugUITools.getPreferenceStore().setValue(IDebugUIConstants.PREF_SKIP_BREAKPOINTS_DURING_RUN_TO_LINE, true);
+		DebugUITools.getPreferenceStore().setValue(IDebugUIConstants.PREF_SKIP_BREAKPOINTS_DURING_RUN_TO_LINE, false);
 	}
 
 	@Override
